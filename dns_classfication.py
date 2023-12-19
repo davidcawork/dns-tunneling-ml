@@ -171,13 +171,13 @@ plt.figure(figsize=(30, 20))
 sns.set(font_scale=1.5)
 g = sns.boxplot(x="model", y="accuracy", data=results_long_nofit)
 plt.title('Comparison of Model by Classification Metric')
-plt.savefig('./benchmark_models_performance.png',dpi=300)
+plt.savefig('fig/benchmark_models',dpi=300)
 plt.show()
 
 
 # Lets go one by one :)
 
-# DTC
+# DTC (depth == 4)
 X_train, Y_train = shuffle(X_train, Y_train) # to reduce overfitting during training
 start = time.time()
 model = DecisionTreeClassifier(max_depth=4)   
@@ -185,3 +185,60 @@ model.fit(X_train, Y_train.ravel())
 end = time.time()
 dtc_time = (end-start)*1000
 print("TIME consu: ", dtc_time,"millisec")
+y_preds = model.predict(X_test)
+evaluate(y_preds, Y_test)
+dtc_acc = accuracy_score(Y_test, y_preds)*100
+print("Detection Accuracy: ",dtc_acc,"%")
+
+plt.figure(figsize=(18,10))
+tree.plot_tree(model, filled=True, fontsize=10)
+plt.savefig("fig/dtc", dpi='figure', format=None, metadata=None, bbox_inches=None, pad_inches=0.1,
+            facecolor='auto', edgecolor='auto',
+            backend=None)
+plt.show()
+
+# KNN ( neighbors == 2)
+start = time.time()
+knn_model = KNeighborsClassifier(n_neighbors = 2)
+y_preds = knn_model.fit(X_train, Y_train.ravel()).predict(X_test)
+end = time.time()
+knn_time = (end-start)*1000
+print("TIME cons ", knn_time,"millisec")
+y_preds = knn_model.predict(X_test)
+evaluate(y_preds, Y_test)
+knn_acc = accuracy_score(Y_test, y_preds)*100
+print("Detection Accuracy: ",knn_acc,"%")
+plt.figure(figsize=(18,10))
+#plt.scatter(X_test, Y_test, label='real', color='blue', marker='o')
+plt.scatter(X_test, Y_test, label='predict', c=y_preds, cmap='viridis', marker='o')
+plt.title('KNN (k=2)')
+plt.xlabel('Entropy')
+plt.ylabel('Class')
+plt.legend()
+plt.savefig("fig/knn")
+plt.show()
+
+# GaussianNB
+start = time.time()
+gnb_model = GaussianNB()
+y_preds = gnb_model.fit(X_train, Y_train.ravel())
+y_preds = gnb_model.predict(X_test)
+end = time.time()
+gnb_time = (end-start)*1000
+print("TIME cons: ", gnb_time,"millisec")
+y_preds = gnb_model.predict(X_test)
+evaluate(y_preds, Y_test)
+gnb_acc = accuracy_score(Y_test, y_preds)*100
+print("Detection Accuracy: ",gnb_acc,"%")
+
+# Final plot
+accuracies = [dtc_acc, gnb_acc, knn_acc]
+print(names)
+plt.figure(figsize=(20, 12))
+plt.bar(names, accuracies, width=0.2)
+plt.legend(loc="upper right")
+plt.ylabel("Accuracy")
+plt.xlabel("Model")
+plt.title("Accuracy Plots")
+plt.savefig("fig/accuracy")
+plt.show()
