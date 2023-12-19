@@ -79,3 +79,45 @@ for query in test_data['Query']:
 
 test_data['Entropy'] = entropy_test_vals
 
+
+# We need to evaluate the models
+def evaluate(predictions, targets):
+    targets = targets.to_numpy()
+    
+    tp = 0; tn = 0; fp = 0; fn = 0;
+    
+    for t in range(targets.shape[0]):
+        if targets[t] == -1:
+            if predictions[t] == 1:
+                fp += 1
+            else:
+                tn += 1
+        else:
+            if predictions[t] == 1:
+                tp += 1
+            else:
+                fn += 1
+
+    print("True Positives :", tp)
+    print("True Negatives :", tn)
+    print("False Positives :", fp)
+    print("False Negatives :", fn)
+
+
+# Pre-process input data
+X_train = training_data['Entropy'] # the training input entropy
+Y_train = training_data['Label']   # the corresponding classifying label for training
+X_train, Y_train = shuffle(X_train, Y_train) # to reduce overfitting during training
+X_train.ravel()
+# We have to reshape the training features into unknown rows but 1 column
+X_train = X_train.values.reshape(-1, 1)
+Y_train = Y_train.values.reshape(-1, 1)
+
+# We have to do the same with the test values 
+X_test = test_data['Entropy']      # the test entropy for testing
+Y_test = test_data['Label']       # the expected corresponding Label after training
+X_test, Y_test = shuffle(X_test, Y_test)
+X_test  = X_test.values.reshape(-1, 1)
+
+#X_train, Y_train = shuffle(X_train, Y_train) # to reduce overfitting during training
+
