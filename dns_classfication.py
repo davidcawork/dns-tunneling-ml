@@ -121,3 +121,33 @@ X_test  = X_test.values.reshape(-1, 1)
 
 #X_train, Y_train = shuffle(X_train, Y_train) # to reduce overfitting during training
 
+# Lets play jeje
+seed = 7
+models = []
+models.append(('DTC', DecisionTreeClassifier()))
+models.append(('GNB', GaussianNB()))
+models.append(('KNN', KNeighborsClassifier(n_neighbors = 2)))
+
+# evaluate each model in turn
+results = []
+names = []
+scoring = 'accuracy'
+dfs = []
+target_names = ['fail', 'passed']
+
+for name, model in models:
+    kfold = model_selection.KFold(n_splits=200, shuffle=True, random_state=seed)
+    cv_results = model_selection.cross_validate(model, X_train, Y_train, cv=kfold, scoring=scoring)
+    clf = model.fit(X_train, Y_train)
+    y_pred = clf.predict(X_test)
+    
+    print(name)
+    print(classification_report(Y_test, y_pred, target_names=target_names))
+    
+    results.append(cv_results)
+    names.append(name)
+
+    this_df = pd.DataFrame(cv_results)
+    this_df['model'] = name
+    dfs.append(this_df)
+    final = pd.concat(dfs, ignore_index=True)
