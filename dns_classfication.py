@@ -49,11 +49,33 @@ plt.show()
 def calculate_entropy(text):
     if not text: 
         return 0 
+    
     entropy = 0
+
+    # Each char has 256 possible values
     for x in range(256): 
+        # Calc prob of that symbol
         p_x = float(text.count(chr(x)))/len(text) 
         if p_x > 0: 
+            # shannon formula
             entropy += - p_x*math.log(p_x, 2) 
     return entropy
 
+# Let's run entropy function on the train dataset for each query (domain)
+entropy_train_vals = []
+
+for query in training_data['Query']:
+    entropy = calculate_entropy(query)
+    entropy_train_vals.append(entropy)
+    
+training_data['Entropy'] = entropy_train_vals
+
+# Let's do the same for test dataset
+entropy_test_vals = []
+
+for query in test_data['Query']:
+    entropy = calculate_entropy(query)
+    entropy_test_vals.append(entropy)
+
+test_data['Entropy'] = entropy_test_vals
 
