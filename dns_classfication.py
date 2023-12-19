@@ -151,3 +151,37 @@ for name, model in models:
     this_df['model'] = name
     dfs.append(this_df)
     final = pd.concat(dfs, ignore_index=True)
+
+model_list = list(set(final.model.values))
+model_list.sort()
+bootstraps = []
+for model in model_list:
+    model_df = final.loc[final.model == model]
+    bootstrap = model_df.sample(n=30, replace=True)
+    bootstraps.append(bootstrap)
+        
+bootstrap_df = pd.concat(bootstraps, ignore_index=True)
+results_long = pd.melt(bootstrap_df,id_vars=['model'],var_name='metrics', value_name='accuracy')
+time_metrics = ['fit_time','score_time'] # fit time metrics
+results_long_nofit = results_long.loc[~results_long['metrics'].isin(time_metrics)] # get df without fit data
+results_long_nofit = results_long_nofit.sort_values(by='accuracy')
+results_long_fit = results_long.loc[results_long['metrics'].isin(time_metrics)] # df with fit data
+results_long_fit = results_long_fit.sort_values(by='accuracy')
+plt.figure(figsize=(30, 20))
+sns.set(font_scale=1.5)
+g = sns.boxplot(x="model", y="accuracy", data=results_long_nofit)
+plt.title('Comparison of Model by Classification Metric')
+plt.savefig('./benchmark_models_performance.png',dpi=300)
+plt.show()
+
+
+# Lets go one by one :)
+
+# DTC
+X_train, Y_train = shuffle(X_train, Y_train) # to reduce overfitting during training
+start = time.time()
+model = DecisionTreeClassifier(max_depth=4)   
+model.fit(X_train, Y_train.ravel())
+end = time.time()
+dtc_time = (end-start)*1000
+print("TIME consu: ", dtc_time,"millisec")
